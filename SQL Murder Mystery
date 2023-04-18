@@ -1,59 +1,84 @@
 
-1.
-SELECT * from crime_scene_report WHERE type = 'murder'
+
+1. Using this query, we get a detailed description of the suspect based on what we know. 
+The crime was a murder and it happened at SQL City on Jan.15,2018
+SELECT * 
+FROM crime_scene_report 
+WHERE type = 'murder'
 AND city = 'SQL City'
 AND date = '20180115'
 
 
-2.
-WITH witness1 AS (SELECT * FROM person 
-				  WHERE address_street_name = 'Northwestern Dr'
-				  ORDER BY address_number DESC LIMIT 1),
-witness2 AS (SELECT * FROM person
-			 WHERE address_street_name = 'Franklin Ave' AND name like '%Annabel%'),
-witnesses AS (SELECT *,1 AS witness FROM witness1
-			  UNION
-			  SELECT *,2 AS witness FROM witness2)
-        
+2. We need to now identify the initial suspect. Here, I will pull the 2 witnesses and there police report transcript.
+First, identify the first witness by listing all the house numbers in 'Northwestern Dr' and listing them in descending order
+Second, searching person named 'Annabel' who lives in 'Franklin Ave'
+Third, we combine the data to display it as one result.
+
+WITH witness1 AS 
+(
+SELECT * FROM person WHERE address_street_name = 'Northwestern Dr' ORDER BY address_number DESC LIMIT 1
+),
+witness2 AS 
+(
+SELECT * FROM person WHERE address_street_name = 'Franklin Ave' AND name like '%Annabel%'
+),
+witnesses AS 
+(
+SELECT *,1 AS witness FROM witness1 UNION SELECT *,2 AS witness FROM witness2
+)
 SELECT A.id, B.transcript FROM witnesses A JOIN interview B ON A.id = B.person_id
 
 
 
-3.
-WITH evidence1 AS (SELECT person_id, name, membership_status
-				   FROM get_fit_now_member
-				   WHERE id like  '%48Z%' 
-				   AND membership_status = 'gold'),
-evidence2 AS (SELECT check_in_date
-			  FROM get_fit_now_check_in
-			  WHERE check_in_date = '20180109'),
-prime_sus AS (SELECT A.name, C.plate_number, B.membership_status, 
-			  (SELECT * FROM evidence2) AS date
-			  FROM person A JOIN evidence1 B ON A.id = B.person_id
-			  JOIN drivers_license C ON A.license_id = C.id
-			  WHERE C.plate_number like '%H42W%')
+3. First witness said he saw a 'man' with a 'Get Fit Now Gym' bag, with a membership number that started with '48Z' and a plate number with 'H42W'.
+Second witness said that she recognized the killer from the gym when she was working out last Jan.9th
 
-SELECT * from prime_sus
+WITH evidence1 AS 
+(
+SELECT person_id, name, membership_status FROM get_fit_now_member WHERE id like  '%48Z%' AND membership_status = 'gold'
+),
+evidence2 AS 
+(
+SELECT check_in_date FROM get_fit_now_check_in WHERE check_in_date = '20180109'
+),
+initial_suspect AS 
+(
+SELECT A.name, C.plate_number, B.membership_status, (SELECT * FROM evidence2) AS date 
+FROM person A 
+JOIN evidence1 B ON A.id = B.person_id 
+JOIN drivers_license C ON A.license_id = C.id
+WHERE C.plate_number like '%H42W%'
+)
+SELECT * from initial_suspect
 
 
 
-4.
+4. Now that we have our initial suspect, lets pull his police interview transcript
 SELECT transcript FROM interview WHERE person_id = 67318
 
 
 
-5.
-WITH evidence1 AS (SELECT person_id, event_name, date, count(*) AS attendance FROM facebook_event_checkin
-				   WHERE event_name = 'SQL Symphony Concert' 
-				   GROUP BY person_id
-				   HAVING COUNT(*) = 3 
-				   AND date like '%201712%'),
-evidence2 AS (SELECT B.id AS person_id, B.name, A.gender, A.height, A.hair_color, A.car_make, A.car_model, B.ssn FROM drivers_license A
-					JOIN person B ON A.id = B.license_id
-					WHERE A.hair_color = 'red'
-					AND A.car_make = 'Tesla'
-					AND A.car_model = 'Model S'
-					AND A.gender = 'female'
-					AND (A.height >= 65 OR A.height <= 67))
+5. We learned that Jeremy was was hired by a woman, around 5'5" (65") or 5'7" (67"), red hair and she drives a Tesla Model S and 
+Attended the SQL Symphony Concert 3 times in December 2017.
+
+WITH evidence1 AS 
+(
+SELECT person_id, event_name, date, count(*) AS attendance FROM facebook_event_checkin
+WHERE event_name = 'SQL Symphony Concert' 
+GROUP BY person_id
+HAVING COUNT(*) = 3 
+AND date like '%201712%'
+),
+evidence2 AS 
+(
+SELECT B.id AS person_id, B.name, A.gender, A.height, A.hair_color, A.car_make, A.car_model, B.ssn 
+FROM drivers_license A
+JOIN person B ON A.id = B.license_id
+WHERE A.hair_color = 'red'
+AND A.car_make = 'Tesla'
+AND A.car_model = 'Model S'
+AND A.gender = 'female'
+AND (A.height >= 65 OR A.height <= 67)
+0)
 						 
 SELECT B.name, B.ssn, A.attendance, A.event_name FROM evidence1 A JOIN evidence2 B ON A.person_id = B.person_id
