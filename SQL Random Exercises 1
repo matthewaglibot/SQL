@@ -1,0 +1,55 @@
+
+--------1. Using JOIN display all courses for which Professor Berndt has been qualified, use the tables,
+--------   db1.ncc.Course, db1.ncc.Qualified, & db1.ncc.FACULTY.
+
+SELECT C.CourseID, C.CourseName
+FROM db1.ncc.FACULTY AS A
+JOIN db1.ncc.Qualified AS B ON A.FacultyID = B.FacultyID
+JOIN db1.ncc.Course AS C ON C.CourseID = B.CourseID
+WHERE A.FacultyName = 'Berndt'
+
+
+
+--------2. Using JOIN display the class roster, including Student name, for all students enrolled in Section 2714 of
+--------   ISM 4212, order by student name. Use the tables db1.ncc.Student, db1.ncc.Registration,
+--------   db1.ncc.Section.
+
+SELECT B.StudentID, B.StudentName, C.SectionNo, C.Semester, C.CourseID
+FROM db1.ncc.Registration AS A
+JOIN db1.ncc.Student AS B ON A.StudentID = B.StudentID
+JOIN db1.ncc.Section AS C ON A.SectionNo = C.SectionNo
+WHERE C.SectionNo = '2714' AND C.CourseID = 'ISM 4212'
+ORDER BY B.StudentName ASC	
+
+
+
+
+--------3. Using JOIN which instructors are qualified to teach ISM 3113? Use the tables db1.ncc.Qualified, &
+--------   db1.ncc.FACULTY.
+
+SELECT B.FacultyName
+FROM db1.ncc.Qualified AS A
+JOIN db1.ncc.FACULTY AS B ON A.FacultyID = B.FacultyID
+WHERE A.CourseID = 'ISM 3113'
+
+
+
+--------4. Using JOIN display the students that were not enrolled in any courses during semester I-2008? Use the
+--------   tables db1.ncc.Student, db1.ncc.Registration.
+
+SELECT A.StudentID, A.StudentName
+FROM db1.ncc.Student AS A
+LEFT JOIN db1.ncc.Registration AS B ON A.StudentID = B.StudentID
+WHERE B.Semester IS NULL
+
+
+
+--------5. Display a list of all books in the BOOKS table. If a book has been ordered by a customer, also list the
+--------   corresponding order number and the state in which the customer resides. Use the tables
+--------   db1.casteel.books, db1.casteel.orderitems, db1.casteel.orders, & db1.casteel.customers.
+
+SELECT A.Title, B.Order#, C.ShipState
+FROM db1.casteel.books A
+LEFT JOIN db1.casteel.orderitems B ON A.ISBN = B.ISBN
+LEFT JOIN db1.casteel.orders C ON C.Order# = B.Order#
+LEFT JOIN db1.casteel.customers D ON D.Customer# = C.Customer#
