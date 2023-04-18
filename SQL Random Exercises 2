@@ -1,0 +1,47 @@
+--Determine the highest gross pay by the employee in the table [db1].[costco].[employee]. Use the tables
+--[db1].[costco].[job], [db1].[costco].[hours] & [db1].[costco].[employee]. Format your column with a
+--column heading and format the data returned by your query with a leading dollar sign ($), comas every
+--three digits and two decimal places
+
+SELECT A.*, FORMAT(B.hours * C.base_pay, 'C') As HighestGrossPay
+FROM db1.Costco.employee A
+LEFT JOIN db1.Costco.hours B ON A.EMP_CODE = B.emp_code
+LEFT JOIN db1.Costco.job C ON A.JOB_CODE = C.JOB_CODE
+
+
+--Determine the lowest weekly sales from the WEST region. Use the tables, [db1].[costco].[store_sales],
+--[db1].[costco].[region]. Format your column with a column heading and format the data returned by
+--your query with a leading dollar sign ($), comas every three digits and two decimal places.
+
+SELECT 'WEST' AS Region, FORMAT(MIN(A.Weekly_sales), 'C') As Lowest_Weekly_Sale
+FROM db1.Costco.store_sales A RIGHT JOIN db1.Costco.region B ON A.region_code = B.REGION_CODE
+WHERE A.region_code = 2
+GROUP BY A.region_code
+
+--Display the ManagerID, MFName, MLName, and number of buildings managed, for all managers that
+--manage more than one building. Use the HAFHMORE schema.
+
+SELECT A.managerid, A.mfname, A.mlname, COUNT(*) AS NoOfBuildingManaged
+FROM db1.HAFHMORE.manager AS A
+LEFT JOIN db1.HAFHMORE.building AS B ON A.managerid = B.bmanagerid
+GROUP BY B.bmanagerid, A.managerid, A.mfname, A.mlname
+HAVING COUNT(*) > 1
+
+
+--Display the ManagerID, MFName, MLName, and the number of buildings managed,for all managers.
+--Use the HAFHMORE schema.
+
+SELECT A.managerid, A.mfname, A.mlname, COUNT(*) AS NoOfBuildingManaged
+FROM db1.HAFHMORE.manager AS A
+LEFT JOIN db1.HAFHMORE.building AS B ON A.managerid = B.bmanagerid
+GROUP BY B.bmanagerid, A.managerid, A.mfname, A.mlname
+
+
+
+--Display the SMemberID, SMemberName, and the number of apartments that the staff members cleans,
+--for all staff members. Use the HAFHMORE schema
+
+SELECT A.smemberid, A.smembername, COUNT(*) AS AptToCleanCount
+FROM db1.HAFHMORE.staffmember AS A
+LEFT JOIN db1.HAFHMORE.cleaning AS B ON A.smemberid = B.smemberid
+GROUP BY A.smemberid, A.smembername
