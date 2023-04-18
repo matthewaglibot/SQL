@@ -1,0 +1,51 @@
+--1. Using the two tables DB1.HR.JOBS, and DB1.HR.EMPLOYEES, list the employees first and last name,
+--job title, salary, and the average salary for the job they hold. List only those employees whose salary is
+--greater than the average for their position.
+
+SELECT A.first_name, A.last_name, B.job_title, A.salary, (SELECT AVG((min_salary + max_salary) / 2)
+FROM db1.hr.jobs C
+WHERE C.job_id = B.job_id) AS Avg_Salary
+FROM db1.HR.employees A 
+JOIN db1.hr.jobs B ON A.job_id = B.job_id
+WHERE A.salary > (SELECT AVG((min_salary + max_salary) / 2)
+                  FROM db1.hr.jobs C
+                  WHERE C.job_id = B.job_id)
+
+
+--2. Write a query to find the departments which do not have employees at all? (Use the db1.hr.departments,
+--db1.hr.employees tables).
+
+SELECT *
+FROM db1.HR.departments A 
+LEFT JOIN db1.hr.employees B ON A.department_id = B.department_id
+WHERE B.department_id IS NULL
+
+
+
+--3. Using the tables, db1.ncc.student & db1.ncc.registration which students were not enrolled in any courses
+--during semester I-2008?
+
+SELECT *
+FROM db1.ncc.student A 
+LEFT JOIN db1.ncc.registration B ON A.StudentID = B.StudentID
+WHERE B.StudentID IS NULL
+
+
+
+
+--4. Determine which books were published by the publisher of "The Wok Way to Cook". Use the table,
+--db1.casteel.books
+
+SELECT * 
+FROM db1.casteel.books
+WHERE PubID = 4
+
+
+
+
+--5. Display the ProductID, ProductName, and ProductPrice of the cheapest product. Use the table,
+--db1.zagimore.product.
+
+SELECT productid, productname, productprice 
+FROM db1.zagimore.product
+WHERE productprice = (SELECT min(productprice) FROM db1.zagimore.product)
